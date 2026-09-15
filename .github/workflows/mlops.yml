@@ -1,0 +1,42 @@
+name: MLOps CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  mlops:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Train and validate model
+        run: python car_price_prediction.py | tee output.txt
+
+      - name: Check model validation
+        run: grep -q "Validation: PASSED" output.txt
+
+      - name: Package validated project
+        run: |
+          mkdir deployment_package
+          cp car_price_prediction.py app.py requirements.txt deployment_package/
+          cp cardekho_dataset.csv deployment_package/
+          tar -czf car_price_prediction_package.tar.gz deployment_package
+
+      - name: Upload deployment package
+        uses: actions/upload-artifact@v4
+        with:
+          name: car-price-prediction-package
+          path: car_price_prediction_package.tar.gz
