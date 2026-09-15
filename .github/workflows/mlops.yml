@@ -2,9 +2,11 @@ name: MLOps CI/CD
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   mlops:
@@ -28,12 +30,8 @@ jobs:
       - name: Check model validation
         run: grep -q "Validation: PASSED" output.txt
 
-      - name: Package validated project
-        run: |
-          mkdir deployment_package
-          cp car_price_prediction.py app.py requirements.txt deployment_package/
-          cp cardekho_dataset.csv deployment_package/
-          tar -czf car_price_prediction_package.tar.gz deployment_package
+      - name: Package project
+        run: tar -czf car_price_prediction_package.tar.gz app.py car_price_prediction.py requirements.txt cardekho_dataset.csv
 
       - name: Upload deployment package
         uses: actions/upload-artifact@v4
